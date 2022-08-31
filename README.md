@@ -320,6 +320,12 @@ Testing
 
 - test-azure                           Run the tests for Azure builders
 
+## Customization
+
+Edit CUSTOMIZATIONS.yaml with the required changes leveraging [this doc](https://image-builder.sigs.k8s.io/capi/capi.html#customization) as a guide for available customizations.
+
+You can use Ansible Roles, Tasks, and Playbooks to automate the customizations.
+
 ## License
 
 This content in this repository is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International Public License](LICENSE-CC-Attribution-ShareAlike4.0)
