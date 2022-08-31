@@ -5,7 +5,12 @@
 This repository provides tooling to assist with Tanzu Kubernetes Grid node image creation. The tooling currently provides options to be able to generate required files for vSphere and Azure images and create them using the [image builder](https://docs.vmware.com/en/VMware-Tanzu-Kubernetes-Grid/1.5/vmware-tanzu-kubernetes-grid-15/GUID-build-images-index.html).
 
 ## Setup
-The script has a flag for a --bootstrap option that will perform the required steps to allow for the image creation.
+To setup the workstation to be able to build images, run the script with the --bootstrap option. This will install the required Docker components and add the user running the script to the docker group. After this happens, you will need to log out and back on.
+
+Additionally, you will need to visit the VMware developer portal and download the TKG bundle for the version of Tanzu Kubernetes Grid that you wish to build.  To do so, visit this website in your browser
+https://developer.vmware.com/samples?categories=Sample&keywords=tkg%20image%20builder&tags=&groups=&filters=&sort=&page= 
+Download the bundle and extract it to a location that this user has read/write access to, such as your home directory.
+This full path will be the option --tkgbundledir when running the script.
 
 ## Requirements
   
