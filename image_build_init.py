@@ -345,7 +345,7 @@ def buildvsphere():
   logging.debug(cmd % (str(options.imageDir),str(args[0])))
   logging.info("Building image %s and storing the image in %s" % (str(args[0]),str(options.imageDir)))
   try:
-    build_vsphere = subprocess.Popen([cmd % (str(options.tkgbundledir),str(args[0]))], cwd=options.tkgbundledir, shell=True)
+    build_vsphere = subprocess.Popen([cmd % (str(options.imageDir),str(args[0]))], cwd=options.tkgbundledir, shell=True)
     build_vsphere.wait()
   except:
     raise RuntimeError("Failed to build image")

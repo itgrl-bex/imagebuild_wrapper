@@ -45,16 +45,17 @@ This full path will be the option --tkgbundledir when running the script.
 
 
 Options:
-  -h, --help            show this help message and exit
-  -d, --debug           Turn on debug messages
-  --bootstrap           Install pre-requisites required to build images.
-  --imagetype=IMAGETYPE
+
+- -h, --help            show this help message and exit
+- -d, --debug           Turn on debug messages
+- --bootstrap           Install pre-requisites required to build images.
+- --imagetype=IMAGETYPE
                         Turn on debug messages
-  --versionstamp=VERSIONSTAMP
+- --versionstamp=VERSIONSTAMP
                         Set the version stamp of the new image.
-  --tkgbundledir=TKGBUNDLEDIR
+- --tkgbundledir=TKGBUNDLEDIR
                         Set the destination to store the new image.
-  --imagedir=IMAGEDIR   Set the destination to store the new image.
+- --imagedir=IMAGEDIR   Set the destination to store the new image.
 
   vSphere Options:
     These are the options for building vSphere images.
