@@ -332,7 +332,7 @@ def buildvsphere():
 	-v $(pwd)/vsphere.json:/home/imagebuilder/vsphere.json \
 	-v $(pwd)/tkg.json:/home/imagebuilder/tkg.json \
 	-v $(pwd)/tkg:/home/imagebuilder/tkg \
-	-v $(pwd)/goss/vsphere-ubuntu-1.22.9+vmware.1-goss-spec.yaml:/home/imagebuilder/goss/ \
+	-v $(pwd)/goss/:/home/imagebuilder/goss/ \
 	-v $(pwd)/metadata.json:/home/imagebuilder/metadata.json \
 	-v $(pwd)/CUSTOMIZATIONS.json:/home/imagebuilder/CUSTOMIZATIONS.json \
 	-v %s:/home/imagebuilder/output \
@@ -355,7 +355,7 @@ def buildaz():
     -v ~/.azure:/home/imagebuilder/.azure \
     -v $(pwd)/tkg.json:/home/imagebuilder/tkg.json \
     -v $(pwd)/tkg:/home/imagebuilder/tkg \
-    -v $(pwd)/goss/vsphere-ubuntu-1.22.9+vmware.1-goss-spec.yaml:/home/imagebuilder/goss/goss.yaml \
+    -v $(pwd)/goss/:/home/imagebuilder/goss/goss.yaml \
     -v $(pwd)/CUSTOMIZATIONS.json:/home/imagebuilder/CUSTOMIZATIONS.json \
     --env PACKER_VAR_FILES="tkg.json CUSTOMIZATIONS.json" \
     --env-file $(pwd)/az-creds.env \
@@ -363,10 +363,10 @@ def buildaz():
 	%s
   """
   logging.debug("Executing the command")
-  logging.debug(cmd % (str(options.tkgbundledir),str(args[0])))
+  logging.debug(cmd % (str(args[0])))
   logging.info("Building image %s" % (str(args[0])))
   try:
-    az_build=Popen([cmd % (str(options.tkgbundledir),str(args[0]))], cwd=options.tkgbundledir, shell=True)
+    az_build=Popen([cmd % (str(args[0]))], cwd=options.tkgbundledir, shell=True)
     az_build.wait()
   except:
     raise RuntimeError("Failed to build image")
