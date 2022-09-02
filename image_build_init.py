@@ -396,6 +396,7 @@ logging.debug("Checking for directory {}".format(options.imageDir))
 if not os.path.exists(options.imageDir):
   try:
     os.makedirs(options.imageDir)
+    os.chmod(options.imageDir, 0o777)
     logging.info("Created directory {}".format(options.imageDir))
   except:
     raise RuntimeError("Cannot create the image directory")
