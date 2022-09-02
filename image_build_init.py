@@ -73,7 +73,15 @@ parser.add_option("--imagedir",
         dest="imageDir",
         default="/tmp/images",
         help="Set the destination to store the new image.")
-
+parser.add_option("--shareddir",
+        action="store",
+        dest="sharedDir",
+        default="/tmp/shared",
+        help="Set the source of files that can be used to build the new image.")
+parser.add_option("--customizations",
+        action="store",
+        dest="customizations",
+        help="Set the full path to the CUSTOMIZATIONS.json file.")
 
 
 vsphere_group = optparse.OptionGroup(parser, "vSphere Options",
@@ -299,6 +307,13 @@ def vspherejson():
   except:
     raise RuntimeError("Unable to write file {}".format(vspherejsonfile))
 
+def changeperms():
+  try:
+    change_perms = subprocess.Popen(["chgrp --recursive docker %s" % (str(options.imageDir))], shell=True)
+    change_perms.wait()
+  except:
+    raise RuntimeError("Failed to change image directory permissions.")
+
 def azcreds():
   logging.debug("Creating or updating az-creds.env file with the supplied information.")
   logging.debug("AZURE_SUBSCRIPTION_ID={}".format(options.subscription))
@@ -328,13 +343,12 @@ def azcreds():
 def buildvsphere():
   if options.imageDir == None:
     raise ValueError("The imageDir option is required but not specified")
-  cmd = """/usr/bin/docker run -it --rm \
-	-v $(pwd)/vsphere.json:/home/imagebuilder/vsphere.json \
+  cmd = """	%s \
+  -v $(pwd)/vsphere.json:/home/imagebuilder/vsphere.json \
 	-v $(pwd)/tkg.json:/home/imagebuilder/tkg.json \
 	-v $(pwd)/tkg:/home/imagebuilder/tkg \
 	-v $(pwd)/goss/:/home/imagebuilder/goss/ \
 	-v $(pwd)/metadata.json:/home/imagebuilder/metadata.json \
-	-v $(pwd)/CUSTOMIZATIONS.json:/home/imagebuilder/CUSTOMIZATIONS.json \
 	-v %s:/home/imagebuilder/output \
 	--env PACKER_VAR_FILES="tkg.json vsphere.json CUSTOMIZATIONS.json" \
 	--env OVF_CUSTOM_PROPERTIES=/home/imagebuilder/metadata.json \
@@ -342,10 +356,10 @@ def buildvsphere():
 	%s
   """
   logging.debug("Executing the command")
-  logging.debug(cmd % (str(options.imageDir),str(args[0])))
+  logging.debug(cmd % (str(dockercmd),str(options.imageDir),str(args[0])))
   logging.info("Building image %s and storing the image in %s" % (str(args[0]),str(options.imageDir)))
   try:
-    build_vsphere = subprocess.Popen([cmd % (str(options.imageDir),str(args[0]))], cwd=options.tkgbundledir, shell=True)
+    build_vsphere = subprocess.Popen([cmd % (str(dockercmd),str(options.imageDir),str(args[0]))], cwd=options.tkgbundledir, shell=True)
     build_vsphere.wait()
   except:
     raise RuntimeError("Failed to build image")
@@ -398,8 +412,41 @@ if args[0] == None:
     raise ValueError("You must specify the image to build.")
     sys.exit()
 
+# Prepare docker command beginning
+dockercmd = "/usr/bin/docker run -it --rm "
+
+try:
+  options.customizations
+except NameError:
+  logging.debug('Using default path for CUSTOMIZATIONS.json')
+  dockercmd += " -v $(pwd)/CUSTOMIZATIONS.json:/home/imagebuilder/CUSTOMIZATIONS.json "
+else:
+  logging.debug('Adding CUSTOMIZATIONS.json path to docker command.')
+  dockercmd += " -v {}:/home/imagebuilder/CUSTOMIZATIONS.json ".format(options.customizations)
+
+try:
+  options.sharedDir
+except NameError:
+  logging.info('No shared directory specified.')
+else:
+  logging.debug('Adding shared directory param to docker command.')
+  dockercmd += " -v {}:/home/imagebuilder/shared ".format(options.sharedDir)
+
+
 if (options.imagetype.lower == 'vcenter' or options.imagetype == 'vsphere'):
   logging.info("Preparing to build vSphere image.")
+  if 'ubuntu' in args[0]:
+    print('Ubuntu is to be goss.yaml')
+    goss = subprocess.run("cp %s/goss/vsphere-ubuntu-*+vmware.*-tkg-v*-goss-spec.yaml %s/goss/goss.yaml" % (str(options.tkgbundledir),str(options.tkgbundledir)), shell=True)
+  elif 'rhel' in args[0]:
+    print('RHEL is to be goss.yaml')
+    goss = subprocess.run("cp %s/goss/vsphere-rhel-*+vmware.*-tkg-v*-goss-spec.yaml %s/goss/goss.yaml" % (str(options.tkgbundledir),str(options.tkgbundledir)), shell=True)
+  elif 'photon' in args[0]:
+    print('Photon is to be goss.yaml')
+    goss = subprocess.run("cp %s/goss/vsphere-photon-*+vmware.*-tkg-v*-goss-spec.yaml %s/goss/goss.yaml" % (str(options.tkgbundledir),str(options.tkgbundledir)), shell=True)
+  else:
+    print('We do not have a test for that.')
+
   try:
     vspherejson()
   except:
@@ -410,8 +457,15 @@ if (options.imagetype.lower == 'vcenter' or options.imagetype == 'vsphere'):
     raise RuntimeError("Not all required parameters have been specified for the image type chosen.")
   except:
     raise RuntimeError("I failed to run")
+  changeperms()
 elif options.imagetype == 'azure':
   logging.info("Preparing to build Azure image.")
+  if 'ubuntu' in args[0]:
+    print('Ubuntu is to be goss.yaml')
+    goss = subprocess.run("cp %s/goss/azure-ubuntu-*+vmware.*-tkg-v*-goss-spec.yaml %s/goss/goss.yaml" % (str(options.tkgbundledir),str(options.tkgbundledir)), shell=True)
+  else:
+    print('We do not have a test for that.')
+
   try:
     azcreds()
   except:
