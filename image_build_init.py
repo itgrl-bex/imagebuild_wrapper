@@ -365,22 +365,21 @@ def buildvsphere():
     raise RuntimeError("Failed to build image")
 
 def buildaz():
-  cmd = """/usr/bin/docker run -it --rm \
+  cmd = """%s \
     -v ~/.azure:/home/imagebuilder/.azure \
     -v $(pwd)/tkg.json:/home/imagebuilder/tkg.json \
     -v $(pwd)/tkg:/home/imagebuilder/tkg \
     -v $(pwd)/goss/:/home/imagebuilder/goss/goss.yaml \
-    -v $(pwd)/CUSTOMIZATIONS.json:/home/imagebuilder/CUSTOMIZATIONS.json \
     --env PACKER_VAR_FILES="tkg.json CUSTOMIZATIONS.json" \
     --env-file $(pwd)/az-creds.env \
     projects.registry.vmware.com/tkg/image-builder:v0.1.11_vmware.3 \
 	%s
   """
   logging.debug("Executing the command")
-  logging.debug(cmd % (str(args[0])))
+  logging.debug(cmd % (str(dockercmd), str(args[0])))
   logging.info("Building image %s" % (str(args[0])))
   try:
-    az_build=Popen([cmd % (str(args[0]))], cwd=options.tkgbundledir, shell=True)
+    az_build=Popen([cmd % (str(dockercmd), str(args[0]))], cwd=options.tkgbundledir, shell=True)
     az_build.wait()
   except:
     raise RuntimeError("Failed to build image")
