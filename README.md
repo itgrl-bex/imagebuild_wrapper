@@ -56,6 +56,11 @@ Options:
 - --tkgbundledir=TKGBUNDLEDIR
                         Set the destination to store the new image.
 - --imagedir=IMAGEDIR   Set the destination to store the new image.
+- --shareddir=SHAREDDIR
+                        Set the source of files that can be used to build the
+                        new image.
+- --customizations=CUSTOMIZATIONS
+                        Set the full path to the CUSTOMIZATIONS.json file.
 
   vSphere Options:
     These are the options for building vSphere images.
@@ -326,6 +331,20 @@ Testing
 Edit CUSTOMIZATIONS.yaml with the required changes leveraging [this doc](https://image-builder.sigs.k8s.io/capi/capi.html#customization) as a guide for available customizations.
 
 You can use Ansible Roles, Tasks, and Playbooks to automate the customizations.
+
+With the addition of the shared directory option `--shareddir` you can put your files, CUSTOMIZATIONS.json and Ansible roles for use within the image builder.
+With the current version of imagebuilder container, the `custom_role_names` parameter is used instead of other parameters.
+
+Sample CUSTOMIZATIONS.json contents when providing script options `--shareddir /home/user/shared` and `--customizations /home/user/shared/CUSTOMIZATIONS.json`
+
+```
+{
+  "custom_role_names": "/home/imagebuilder/shared/ansible/roles/custom /home/imagebuilder/tkg",
+  "extra_debs": "\"inetutils-traceroute\""
+}
+```
+
+**Note:** *You must include the role `/home/imagebuilder/tkg` in your `custom_role_names` list.*
 
 ## License
 
