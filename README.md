@@ -348,4 +348,4 @@ Sample CUSTOMIZATIONS.json contents when providing script options `--shareddir /
 
 ## License
 
-This content in this repository is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International Public License](LICENSE-CC-Attribution-ShareAlike4.0)
+This content in this repository is licensed under the [GNU GENERAL PUBLIC LICENSE](LICENSE)
