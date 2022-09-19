@@ -65,40 +65,40 @@ Options:
   vSphere Options:
     These are the options for building vSphere images.
 
-    --vcenter=VCENTER   The vCenter server that you wish to connect to.
-    --cluster=CLUSTER   Sets the cluster in the target vCenter to use.
-    --no-template       Do not convert the built virtual machine to a template
+  - --vcenter=VCENTER   The vCenter server that you wish to connect to.
+  - --cluster=CLUSTER   Sets the cluster in the target vCenter to use.
+  - --no-template       Do not convert the built virtual machine to a template
                         when build is complete?
-    --template          Convert the built virtual machine to a template when
-                        build is complete?
-    --datacenter=DATACENTER
+  - --template          Convert the built virtual machine to a template when
+                        build is complete? *Note: This template may not be usable to create clusters, instead use the exported ova.*
+  - --datacenter=DATACENTER
                         The datacenter to use in the target vCenter.
-    --datastore=DATASTORE
+  - --datastore=DATASTORE
                         The datastore to use in the target vCenter.
-    --folder=FOLDER     The folder where you wish virtual machine to be built
+  - --folder=FOLDER     The folder where you wish virtual machine to be built
                         in the target vCenter.
-    --secure            connect to vCenter securely
-    --insecure          connect to vCenter insecurely
-    --network=NETWORK   The network in the target vCenter that you wish to
+  - --secure            connect to vCenter securely
+  - --insecure          connect to vCenter insecurely
+  - --network=NETWORK   The network in the target vCenter that you wish to
                         use. This network must have dhcp.
-    --resourcepool=RESOURCEPOOL
+  - --resourcepool=RESOURCEPOOL
                         The vCenter resource pool to use.
-    --username=USERNAME
+  - --username=USERNAME
                         The vCenter username that can connect and build VMs on
                         the target vCenter.
-    --password=PASSWORD
+  - --password=PASSWORD
                         The vCenter password for the user.
 
   Azure Options:
     These are the options for building Azure images.
 
-    --subscription=SUBSCRIPTION
+  - --subscription=SUBSCRIPTION
                         Input the Azure Subscription ID
-    --tenantid=TENANTID
+  - --tenantid=TENANTID
                         Input the Azure Tenant ID
-    --clientid=CLIENTID
+  - --clientid=CLIENTID
                         Input the Azure client id with the capabilities needed
-    --clientsecret=CLIENTSECRET
+  - --clientsecret=CLIENTSECRET
                         Input the Azure client Secret
 
 ## Image Builder options
