@@ -92,7 +92,6 @@ Options:
   Azure Options:
     These are the options for building Azure images.
   - --azlogin           Do `az login inside of the container when security restrictions prevent token reuse between machines.
-
   - --subscription=SUBSCRIPTION
                         Input the Azure Subscription ID
   - --tenantid=TENANTID
@@ -101,6 +100,14 @@ Options:
                         Input the Azure client id with the capabilities needed
   - --clientsecret=CLIENTSECRET
                         Input the Azure client Secret
+  - --resourcegroup=RESOURCEGROUP
+                        Optional: The resource group for this build.
+  - --storageaccount=STORAGEACCOUNT
+                        Optional: The storage account for this build.
+  - --azlocation=AZLOCATION
+                        Optional: The Azure Location for this build.
+  - --galleryname=GALLERYNAME
+                        Optional: The Azure Image Gallery Name for this build.
 
 ## Image Builder options
 
