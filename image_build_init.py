@@ -17,6 +17,7 @@ import logging, sys
 import os
 import shutil
 import subprocess
+import time
 
 usage = """ %prog [options] arg1
 
@@ -57,7 +58,7 @@ parser.add_option("--imagetype",
         action="store",
         dest="imagetype",
         default='vsphere',
-        help="Turn on debug messages")
+        help="Set the image type of the build.  i.e. vsphere or azure")
 parser.add_option("--versionstamp",
         action="store",
         dest="versionstamp",
@@ -67,7 +68,7 @@ parser.add_option("--tkgbundledir",
         action="store",
         dest="tkgbundledir",
         default='/home/builder/TKG-Image-Builder-for-Kubernetes-v1_22_9---vmware_1-tkg-v_1_5_4',
-        help="Set the destination to store the new image.")
+        help="Set the destination of the downloaded TKG bundle from https://developer.vmware.com/samples?categories=Sample&keywords=tkg%20image%20builder&tags=&groups=&filters=&sort=&page=")
 parser.add_option("--imagedir",
         action="store",
         dest="imageDir",
@@ -146,6 +147,16 @@ parser.add_option_group(vsphere_group)
 
 az_group = optparse.OptionGroup(parser, "Azure Options",
         "These are the options for building Azure images.")
+az_group.add_option("--azdir",
+        action="store",
+        default="~/.azure",
+        dest="azdir",
+        help="The location of the .azure directory to use.  Container runs as uid 1000.")
+az_group.add_option("--azlogin",
+        action="store_true",
+        default=False,
+        dest="azlogin",
+        help="Do az login inside of container when security restricts tokens.")
 az_group.add_option("--subscription",
         action="store",
         dest="subscription",
@@ -162,6 +173,27 @@ az_group.add_option("--clientsecret",
         action="store",
         dest="clientsecret",
         help="Input the Azure client Secret")
+az_group.add_option("--resourcegroup",
+        action="store",
+        dest="resourcegroup",
+        default=None,
+        help="Optional: The resource group for this build.")
+az_group.add_option("--storageaccount",
+        action="store",
+        dest="storageaccount",
+        default=None,
+        help="Optional: The storage account for this build.")
+az_group.add_option("--azlocation",
+        action="store",
+        dest="azlocation",
+        default=None,
+        help="Optional: The Azure Location for this build.")
+az_group.add_option("--galleryname",
+        action="store",
+        dest="galleryname",
+        default=None,
+        help="Optional: The Azure Image Gallery Name for this build.")
+
 
 parser.add_option_group(az_group)
 
@@ -173,6 +205,12 @@ if options._DEBUG:
 
 if options.bootstrap:
   logging.info('Preparing user environment with pre-requisites required.')
+  logging.info('Installing Azure CLI')
+  try:
+    azcliget = subprocess.Popen(('curl -sL https://aka.ms/InstallAzureCLIDeb'), stdout=subprocess.PIPE)
+    azcliinstall = subprocess.check_output(('sudo','bash'), stdin=azcliget.stdout)
+  except:
+    raise RuntimeError("Unable to install Azure CLI, please try manually curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash")
   logging.info('Looking for OS package manager')
   is_yum = shutil.which("yum")
   is_apt = shutil.which("apt")
@@ -232,6 +270,20 @@ if options.bootstrap:
     raise ValueError("The tkgbundledir option is required but not specified")
   print('System is prepared to build images. Please logout and log back in to build images.')
   sys.exit()
+
+if options.azlogin:
+  logging.info("Running az login in the container.")
+  try:
+    azurelogin = subprocess.Popen(('az login'), shell=True )
+    t = 60
+    while t:
+      mins, secs = divmod(t, 60)
+      timer = '{:02d}:{:02d}'.format(mins, secs)
+      print(timer, end="\r")
+      time.sleep(1)
+      t -= 1
+  except:
+    raise RuntimeError("Unable to do az login.  Run /usr/bin/docker run -it --rm --entrypoint=/bin/bash -v ~/.azure:/home/imagebuilder/.azure projects.registry.vmware.com/tkg/image-builder:v0.1.11_vmware.3 and manually do az login inside of the container and try the build again.")
 
 ## Functions
 def stampversion():
@@ -340,6 +392,35 @@ def azcreds():
   except:
     raise RuntimeError("Unable to write {}".format(azcredsfile))
 
+  if options.resourcegroup is None:
+    logging.info("Resource group is not specified.")
+  else:
+    f = open(azcredsfile, 'a')
+    f.write("RESOURCE_GROUP_NAME={}\n".format(options.resourcegroup))
+    f.close()
+
+  if options.storageaccount is None:
+    logging.info("Storage Account is not specified.")
+  else:
+    f = open(azcredsfile, 'a')
+    f.write("STORAGE_ACCOUNT_NAME={}\n".format(options.storageaccount))
+    f.close()
+
+  if options.azlocation is None:
+    logging.info("Azure Location is not specified.")
+  else:
+    f = open(azcredsfile, 'a')
+    f.write("AZURE_LOCATION={}\n".format(options.azlocation))
+    f.close()
+
+  if options.galleryname is None:
+    logging.info("Gallery Name is not specified.")
+  else:
+    f = open(azcredsfile, 'a')
+    f.write("GALLERY_NAME={}\n".format(options.galleryname))
+    f.close()
+
+
 def buildvsphere():
   if options.imageDir == None:
     raise ValueError("The imageDir option is required but not specified")
@@ -366,7 +447,7 @@ def buildvsphere():
 
 def buildaz():
   cmd = """%s \
-    -v ~/.azure:/home/imagebuilder/.azure \
+    -v %s:/home/imagebuilder/.azure \
     -v $(pwd)/tkg.json:/home/imagebuilder/tkg.json \
     -v $(pwd)/tkg:/home/imagebuilder/tkg \
     -v $(pwd)/goss/:/home/imagebuilder/goss/goss.yaml \
@@ -376,10 +457,10 @@ def buildaz():
 	%s
   """
   logging.debug("Executing the command")
-  logging.debug(cmd % (str(dockercmd), str(args[0])))
+  logging.debug(cmd % (str(dockercmd), str(options.azdir), str(args[0])))
   logging.info("Building image %s" % (str(args[0])))
   try:
-    az_build=Popen([cmd % (str(dockercmd), str(args[0]))], cwd=options.tkgbundledir, shell=True)
+    az_build=subprocess.Popen([cmd % (str(dockercmd), str(options.azdir), str(args[0]))], cwd=options.tkgbundledir, shell=True)
     az_build.wait()
   except:
     raise RuntimeError("Failed to build image")
