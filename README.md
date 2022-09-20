@@ -50,11 +50,11 @@ Options:
 - -d, --debug           Turn on debug messages
 - --bootstrap           Install pre-requisites required to build images.
 - --imagetype=IMAGETYPE
-                        Turn on debug messages
+                        Set the image type of the build.  i.e. vsphere or azure
 - --versionstamp=VERSIONSTAMP
                         Set the version stamp of the new image.
 - --tkgbundledir=TKGBUNDLEDIR
-                        Set the destination to store the new image.
+                        Set the destination of the downloaded TKG bundle from [here](https://developer.vmware.com/samples?categories=Sample&keywords=tkg%20image%20builder&tags=&groups=&filters=&sort=&page=)
 - --imagedir=IMAGEDIR   Set the destination to store the new image.
 - --shareddir=SHAREDDIR
                         Set the source of files that can be used to build the
@@ -91,6 +91,7 @@ Options:
 
   Azure Options:
     These are the options for building Azure images.
+  - --azlogin           Do `az login inside of the container when security restrictions prevent token reuse between machines.
 
   - --subscription=SUBSCRIPTION
                         Input the Azure Subscription ID
